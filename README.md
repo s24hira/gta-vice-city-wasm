@@ -11,6 +11,7 @@ You need the game files (`game.tar.gz`) once — see [How it works](#how-it-work
 ## What's included
 
 - **Play in your browser.** Nothing to install, and your game files stay on your device.
+- **Ultra-low memory streaming extraction.** Streams and extracts `.tar.gz` archives in chunks using under 15 MB RAM, eliminating out-of-memory crashes on 4GB–8GB PCs.
 - **Your own saved games.** Import, export and remove PC saves.
 - **Custom skins.** Change how Tommy looks with your own images.
 - **Cheats on demand.** Off by default; switch them on from the setup screen.

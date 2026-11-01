@@ -106,15 +106,30 @@ function parseRange(rangeHeader, size) {
     return { start, end };
 }
 
+const dirCache = new Map();
+
+async function getDirHandleCached(root, pathParts) {
+    let current = root;
+    let accumulatedPath = "";
+    for (const part of pathParts) {
+        accumulatedPath += "/" + part;
+        let handle = dirCache.get(accumulatedPath);
+        if (!handle) {
+            handle = await current.getDirectoryHandle(part);
+            dirCache.set(accumulatedPath, handle);
+        }
+        current = handle;
+    }
+    return current;
+}
+
 async function serveFromOPFS(request, pathname) {
     try {
         const root = await navigator.storage.getDirectory();
         const parts = pathname.replace(/^\//, '').split('/').map(decodeURIComponent);
-        let dir = root;
-        for (let i = 0; i < parts.length - 1; i++) {
-            dir = await dir.getDirectoryHandle(parts[i]);
-        }
+        const dirParts = parts.slice(0, parts.length - 1);
         const filename = parts[parts.length - 1];
+        const dir = await getDirHandleCached(root, dirParts);
         const fileHandle = await dir.getFileHandle(filename);
         const file = await fileHandle.getFile();
         const headers = buildHeaders(filename, file.size);
