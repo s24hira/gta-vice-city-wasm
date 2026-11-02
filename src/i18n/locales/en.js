@@ -16,6 +16,8 @@ export default {
     title: "Setup",
     note: "The imported archive is stored locally by this browser, so you can come back later without reimporting unless you want to replace it.",
     download: "Download game.tar.gz",
+    autoImport: "Import root game.tar.gz",
+    foundInRoot: "Found in project: game.tar.gz",
     select: "Select game.tar.gz",
     noFile: "No file selected",
     resetFiles: "Delete game",

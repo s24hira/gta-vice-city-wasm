@@ -143,17 +143,36 @@ async function writeMarkerFile(root, name, text) {
 }
 
 self.onmessage = async (event) => {
-    const { file } = event.data;
+    const { file, url } = event.data;
     try {
         self.postMessage({ type: 'progress', phase: 'extracting', pct: 0, done: 0 });
 
         const root = await navigator.storage.getDirectory();
         dirCache.clear();
 
+        let rawStream;
+        let fileSize = 1;
+
+        if (file) {
+            rawStream = file.stream();
+            fileSize = file.size || 1;
+        } else if (url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch game archive: ${response.status} ${response.statusText}`);
+            }
+            const contentLength = response.headers.get('content-length');
+            if (contentLength) {
+                fileSize = parseInt(contentLength, 10) || 1;
+            }
+            rawStream = response.body;
+        } else {
+            throw new Error('No archive file or URL provided');
+        }
+
         // Track progress using compressed stream bytes read
         let loadedCompressedBytes = 0;
         let lastReportedPct = 0;
-        const fileSize = file.size || 1;
 
         const progressTrackingStream = new TransformStream({
             transform(chunk, controller) {
@@ -173,7 +192,7 @@ self.onmessage = async (event) => {
         });
 
         // Decompress GZIP on the fly
-        const decompressedStream = file.stream()
+        const decompressedStream = rawStream
             .pipeThrough(progressTrackingStream)
             .pipeThrough(new DecompressionStream('gzip'));
 

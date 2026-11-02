@@ -408,6 +408,18 @@ body.gameIsStarted .lang-switcher {
   color: #030912;
 }
 
+.auto-import-btn {
+  background: linear-gradient(135deg, #00e5a0, #0098d4);
+  color: #030912;
+  box-shadow: 0 4px 18px rgba(0, 229, 160, 0.28);
+}
+
+.auto-import-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 28px rgba(0, 229, 160, 0.4);
+}
+
 /* Reset button — subtle danger */
 .reset-btn {
   display: flex;

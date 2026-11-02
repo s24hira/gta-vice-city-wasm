@@ -54,11 +54,11 @@ If your download is a `.rar` or `.7z`, unpack it first. *Reset game data* also d
 ## Running locally
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
-Then open `http://localhost:5173`.
+Place `game.tar.gz` directly in the project root directory. When you open `http://localhost:5173/gta-vice-city-wasm/`, the setup page automatically detects the archive in the root folder and enables **1-Click Import** without having to open file dialogs.
 
 ## Tech stack
 

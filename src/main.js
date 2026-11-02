@@ -214,6 +214,7 @@ async function initSetupFlow() {
   const selectedFileName = document.getElementById("selected-file-name");
   const clickToPlayButton = document.getElementById("click-to-play-button");
   const resetFilesBtn = document.getElementById("reset-files-btn");
+  const autoImportBtn = document.getElementById("auto-import-btn");
 
   if (
     !overlay ||
@@ -270,6 +271,7 @@ async function initSetupFlow() {
       fileInput.value = "";
       resetFilesBtn.disabled = false;
       setText(resetFilesBtn, "setup.resetFiles");
+      await checkLocalArchive();
     });
   }
 
@@ -279,10 +281,14 @@ async function initSetupFlow() {
   const setImporting = (importing) => {
     fileInput.disabled = importing;
     filePicker?.classList.toggle("disabled", importing);
+    if (autoImportBtn) {
+      autoImportBtn.disabled = importing;
+      autoImportBtn.classList.toggle("disabled", importing);
+    }
     if (resetFilesBtn) resetFilesBtn.disabled = importing;
   };
 
-  const runImport = async (file) => {
+  const runImport = async (source) => {
     errorBox.style.display = "none";
     setImporting(true);
     progress.style.display = "block";
@@ -297,7 +303,14 @@ async function initSetupFlow() {
       showError("errors.worker", { message: error.message });
       setImporting(false);
     };
-    worker.postMessage({ file });
+
+    if (source instanceof File) {
+      worker.postMessage({ file: source });
+    } else if (typeof source === "string") {
+      worker.postMessage({ url: source });
+    } else {
+      worker.postMessage(source);
+    }
     worker.onmessage = async (event) => {
       const message = event.data;
 
@@ -405,7 +418,27 @@ async function initSetupFlow() {
     return;
   }
 
+  const checkLocalArchive = async () => {
+    const rootArchiveUrl = `${BASE}game.tar.gz`;
+    try {
+      const headCheck = await fetch(rootArchiveUrl, { method: "HEAD" });
+      if (headCheck.ok) {
+        console.log("[setup] Found local game.tar.gz in project root");
+        setText(selectedFileName, "setup.foundInRoot");
+        if (autoImportBtn) {
+          autoImportBtn.style.display = "flex";
+          autoImportBtn.onclick = () => {
+            runImport({ url: rootArchiveUrl });
+          };
+        }
+      }
+    } catch (err) {
+      console.debug("[setup] Local archive check:", err);
+    }
+  };
+
   setStorageStatus("status.missing", "missing");
+  await checkLocalArchive();
 
   console.log("[setup] waiting for file selection");
 }
